@@ -1,4 +1,4 @@
-"""Pipeline orchestrator: streaming extract -> bounded transform -> streaming load with checkpoints."""
+"""Pipeline orchestrator: streaming extract -> transform -> load with checkpoints."""
 
 from __future__ import annotations
 

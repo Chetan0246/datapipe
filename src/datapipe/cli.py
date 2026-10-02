@@ -66,9 +66,8 @@ def run(
 
     total = pipeline.prepare()
     if resume and pipeline.resumed_count > 0:
-        console.print(
-            f"[bold green]Resuming pipeline: {pipeline.resumed_count}/{total} already completed.[/bold green]"
-        )
+        msg = f"Resuming pipeline: {pipeline.resumed_count}/{total} already completed."
+        console.print(f"[bold green]{msg}[/bold green]")
     console.print(f"[bold]Loaded {total} item(s) from {source.name}[/bold]")
 
     with Progress(
