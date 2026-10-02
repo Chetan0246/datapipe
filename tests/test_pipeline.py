@@ -104,3 +104,22 @@ async def test_pipeline_handles_failures(tmp_path: Path) -> None:
     assert stats.failed == 1
     errors = sink.with_suffix(".errors.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(errors) == 1
+
+
+async def test_pipeline_checkpoint_and_resume(tmp_path: Path) -> None:
+    src = tmp_path / "stream_in.jsonl"
+    lines = [json.dumps({"id": i, "val": f"v-{i}"}) for i in range(8)]
+    src.write_text("\n".join(lines), encoding="utf-8")
+    sink = tmp_path / "stream_out.jsonl"
+
+    # Run 1: process with a simulated interruption on row 4
+    pipe1 = Pipeline(source=src, sink=sink, workers=2, fail_on="v-4", max_attempts=1)
+    await pipe1.run()
+    assert pipe1.checkpoint_path.exists()
+
+    # Run 2: resume without fail_on
+    pipe2 = Pipeline(source=src, sink=sink, workers=2, resume=True)
+    assert pipe2.resumed_count > 0
+    stats2 = await pipe2.run()
+    assert stats2.processed == 8
+

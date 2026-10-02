@@ -50,13 +50,25 @@ def run(
     fail_on: str | None = typer.Option(
         None, "--fail-on", help="Force failure when payload contains this string"
     ),
+    resume: bool = typer.Option(
+        False, "--resume", help="Resume from last checkpoint, skipping completed items"
+    ),
 ) -> None:
     """Run the pipeline over SOURCE, writing successful rows to SINK."""
     pipeline = Pipeline(
-        source=source, sink=sink, workers=workers, max_attempts=max_attempts, fail_on=fail_on
+        source=source,
+        sink=sink,
+        workers=workers,
+        max_attempts=max_attempts,
+        fail_on=fail_on,
+        resume=resume,
     )
 
     total = pipeline.prepare()
+    if resume and pipeline.resumed_count > 0:
+        console.print(
+            f"[bold green]Resuming pipeline: {pipeline.resumed_count}/{total} already completed.[/bold green]"
+        )
     console.print(f"[bold]Loaded {total} item(s) from {source.name}[/bold]")
 
     with Progress(
